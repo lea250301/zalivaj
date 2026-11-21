@@ -38,3 +38,5 @@ export function trustLabel(trust) {
   if (trust.averageRating == null) return `še brez ocen · ${sittings}`;
   return `★ ${trust.averageRating.toFixed(1).replace('.', ',')} · ${sittings}`;
 }
+
+const = ;
