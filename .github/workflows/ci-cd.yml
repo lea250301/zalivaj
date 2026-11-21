@@ -126,4 +126,34 @@ jobs:
           path: |
             frontend/coverage/
             backend/coverage/
-          if-no-files-found: error     
+          if-no-files-found: error   
+  deploy:
+    name: Objavi backend sliko
+    runs-on: ubuntu-latest
+    needs: [lint, build, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Prenos backend artefakta
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-image
+
+      - name: Naloži Docker sliko
+        run: docker load --input backend-image.tar
+
+      - name: Prijava v GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Objavi Docker sliko
+        run: |
+          OWNER_LC="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          docker tag "zalivaj-backend:${GITHUB_SHA}" "ghcr.io/${OWNER_LC}/zalivaj-backend:${GITHUB_SHA}"
+          docker push "ghcr.io/${OWNER_LC}/zalivaj-backend:${GITHUB_SHA}"  
