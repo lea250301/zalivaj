@@ -88,3 +88,18 @@ docs/       dokumentacija, wireframes in ADR
 ## Razvojni proces
 
 Projekt sledi GitHub Flow: vsaka sprememba nastane na svoji veji in se v `main` združi prek pull requesta. Naloge so vodene kot GitHub Issues na tabli GitHub Projects.
+
+# Zalivaj
+
+[![CI/CD](https://github.com/lea250301/zalivaj/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/lea250301/zalivaj/actions/workflows/ci-cd.yml)
+
+## Aplikacija
+
+[Aplikacijo odpri tukaj](https://zalivaj-frontend.pages.dev/)
+
+## CI/CD cevovod
+
+- **Lint:** preveri slog kode v frontendu in backendu.
+- **Build:** zgradi frontend in backend Docker sliko ter shrani artefakte.
+- **Test:** izvede teste frontenda in backenda.
+- **Deploy:** objavi frontend na Cloudflare Pages in backend na Render.
