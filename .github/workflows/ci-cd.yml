@@ -90,4 +90,40 @@ jobs:
           name: backend-package
           path: backend-package/
           include-hidden-files: true
-          if-no-files-found: error       
+          if-no-files-found: error  
+  test:
+    name: Testi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prevzem kode
+        uses: actions/checkout@v4
+
+      - name: Nastavitev Node.js in npm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Testi frontenda in coverage
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test
+
+      - name: Testi backenda in coverage
+        working-directory: backend
+        run: |
+          npm ci
+          npm test
+
+      - name: Shrani coverage poročili
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            frontend/coverage/
+            backend/coverage/
+          if-no-files-found: error     
