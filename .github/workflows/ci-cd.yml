@@ -59,6 +59,8 @@ jobs:
       - name: Gradnja frontenda
         working-directory: frontend
         run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
 
       - name: Shrani frontend artefakt
         uses: actions/upload-artifact@v4
@@ -136,6 +138,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      deployments: write
     steps:
       - name: Prenos backend artefakta
         uses: actions/download-artifact@v4
@@ -156,4 +159,27 @@ jobs:
         run: |
           OWNER_LC="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
           docker tag "zalivaj-backend:${GITHUB_SHA}" "ghcr.io/${OWNER_LC}/zalivaj-backend:${GITHUB_SHA}"
-          docker push "ghcr.io/${OWNER_LC}/zalivaj-backend:${GITHUB_SHA}"  
+          docker push "ghcr.io/${OWNER_LC}/zalivaj-backend:${GITHUB_SHA}"
+
+      - name: Sproži namestitev backenda na Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          OWNER_LC="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          IMAGE_URL="ghcr.io/${OWNER_LC}/zalivaj-backend:${GITHUB_SHA}"
+          curl --fail-with-body --get "$RENDER_DEPLOY_HOOK" \
+            --data-urlencode "imgURL=${IMAGE_URL}"
+
+      - name: Prenos frontend artefakta
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend-dist
+
+      - name: Objava frontenda na Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy frontend-dist --project-name=zalivaj-frontend --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
