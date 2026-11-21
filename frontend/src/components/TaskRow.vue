@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { formatDate } from '../utils.js';
 
-const props = defineProps({
+defineProps({
   task: { type: Object, required: true },
   canComplete: { type: Boolean, default: false },
   busy: { type: Boolean, default: false },
