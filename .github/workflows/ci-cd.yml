@@ -70,6 +70,8 @@ jobs:
       - name: Namestitev backend odvisnosti
         working-directory: backend
         run: npm ci
+        env:
+          DATABASE_URL: postgresql://zalivaj:zalivaj@localhost:5432/zalivaj?schema=public
 
       - name: Generiranje Prisma Clienta
         working-directory: backend
@@ -77,20 +79,18 @@ jobs:
         env:
           DATABASE_URL: postgresql://zalivaj:zalivaj@localhost:5432/zalivaj?schema=public
 
-      - name: Priprava backend paketa
-        working-directory: backend
-        run: |
-          npm prune --omit=dev
-          mkdir -p "$GITHUB_WORKSPACE/backend-package"
-          cp -R src prisma openapi.yaml package.json package-lock.json node_modules "$GITHUB_WORKSPACE/backend-package/"
+      - name: Gradnja backend Docker slike
+        run: docker build --platform linux/amd64 --file backend/Dockerfile --tag zalivaj-backend:${{ github.sha }} backend
+
+      - name: Izvoz backend slike
+        run: docker save zalivaj-backend:${{ github.sha }} --output backend-image.tar
 
       - name: Shrani backend artefakt
         uses: actions/upload-artifact@v4
         with:
-          name: backend-package
-          path: backend-package/
-          include-hidden-files: true
-          if-no-files-found: error  
+          name: backend-image
+          path: backend-image.tar
+          if-no-files-found: error
   test:
     name: Testi
     runs-on: ubuntu-latest
